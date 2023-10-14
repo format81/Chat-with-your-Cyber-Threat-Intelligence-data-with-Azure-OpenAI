@@ -1,4 +1,4 @@
-# Chat with your Cyber Threat Intelligence data with Azure-OpenAI
+# Chat with your Cyber Threat Intelligence data with Azure OpenAI
 Chat with your Cyber Threat Intelligence data with Azure OpenAI
 
 Blog post: 
@@ -24,10 +24,10 @@ To upload this playbook in Azure please follow the below instructions:
 
 Thank you!
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fformat81%2FChat-with-your-Cyber-Threat-Intelligence-data-with-Azure-OpenAI%2FMDTI_Get_Articles_IOCs_to_SPO%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fformat81%2FChat-with-your-Cyber-Threat-Intelligence-data-with-Azure-OpenAI%2Fmain%2FMDTI_Get_Articles_IOCs_to_SPO%2Fazuredeploy.json" target="_blank">
     <img src="https://aka.ms/deploytoazurebutton"/>
 </a>
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fformat81%2FChat-with-your-Cyber-Threat-Intelligence-data-with-Azure-OpenAI%2FMDTI_Get_Intel_Profile_to_SPO%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fformat81%2FChat-with-your-Cyber-Threat-Intelligence-data-with-Azure-OpenAI%2Fmain%2FMDTI_Get_Intel_Profile_to_SPO%2Fazuredeploy.json" target="_blank">
 <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazuregov.png"/>
 </a>
 

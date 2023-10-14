@@ -1,0 +1,510 @@
+{
+    "$schema":  "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion":  "1.0.0.0",
+    "metadata":  {
+        "title":  "",
+        "description":  "",
+        "prerequisites":  "",
+        "postDeployment":  [
+        ],
+        "prerequisitesDeployTemplateFile":  "",
+        "lastUpdateTime":  "",
+        "entities":  [
+        ],
+        "tags":  [
+        ],
+        "support":  {
+            "tier":  "community",
+            "armtemplate":  "Generated from https://github.com/Azure/Azure-Sentinel/tree/master/Tools/Playbook-ARM-Template-Generator"
+        },
+        "author":  {
+            "name":  ""
+        }
+    },
+    "parameters":  {
+        "PlaybookName":  {
+            "defaultValue":  "MDTI_Get_Articles_IOCs_to_SPO",
+            "type":  "string"
+        },
+        "ClientID":  {
+            "type":  "string",
+            "metadata":  {
+                "description":  "Enter value for ClientID"
+            }
+        },
+        "Secret":  {
+            "type":  "string",
+            "metadata":  {
+                "description":  "Enter value for Secret"
+            }
+        },
+        "Tenant":  {
+            "type":  "string",
+            "metadata":  {
+                "description":  "Enter value for Tenant"
+            }
+        }
+    },
+    "variables":  {
+        "SharepointonlineConnectionName":  "[concat('Sharepointonline-', parameters('PlaybookName'))]"
+    },
+    "resources":  [
+        {
+            "properties":  {
+                "provisioningState":  "Succeeded",
+                "state":  "Enabled",
+                "definition":  {
+                    "$schema":  "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion":  "1.0.0.0",
+                    "parameters":  {
+                        "$connections":  {
+                            "defaultValue":  {
+                            },
+                            "type":  "Object"
+                        },
+                        "ClientID":  {
+                            "defaultValue":  "[parameters('ClientID')]",
+                            "type":  "string"
+                        },
+                        "Secret":  {
+                            "defaultValue":  "[parameters('Secret')]",
+                            "type":  "string"
+                        },
+                        "Tenant":  {
+                            "defaultValue":  "[parameters('Tenant')]",
+                            "type":  "string"
+                        }
+                    },
+                    "triggers":  {
+                        "Recurrence":  {
+                            "recurrence":  {
+                                "frequency":  "Day",
+                                "interval":  1
+                            },
+                            "evaluatedRecurrence":  {
+                                "frequency":  "Day",
+                                "interval":  1
+                            },
+                            "type":  "Recurrence"
+                        }
+                    },
+                    "actions":  {
+                        "For_each":  {
+                            "foreach":  "@body('Parse_JSON_-_Article_IDs')?['value']",
+                            "actions":  {
+                                "Condition":  {
+                                    "actions":  {
+                                        "For_each_2":  {
+                                            "foreach":  "@body('Parse_JSON_indicators')?['value']",
+                                            "actions":  {
+                                                "Compose":  {
+                                                    "runAfter":  {
+                                                    },
+                                                    "type":  "Compose",
+                                                    "inputs":  {
+                                                        "body":  {
+                                                            "body":  "@body('Parse_JSON_-_New_Articles')?['body']",
+                                                            "createdDateTime":  "@{body('Parse_JSON_-_New_Articles')?['createdDateTime']}",
+                                                            "id":  "@{body('Parse_JSON_-_New_Articles')?['id']}",
+                                                            "isFeatured":  " @{body('Parse_JSON_-_New_Articles')?['isFeatured']}",
+                                                            "lastUpdatedDateTime":  "@{body('Parse_JSON_-_New_Articles')?['lastUpdatedDateTime']}",
+                                                            "summary":  "@body('Parse_JSON_-_New_Articles')?['summary']",
+                                                            "tags":  "@body('Parse_JSON_-_New_Articles')?['tags']",
+                                                            "title":  "@{body('Parse_JSON_-_New_Articles')?['title']}"
+                                                        },
+                                                        "indicators":  {
+                                                            "value":  "@body('Parse_JSON_indicators')?['value']"
+                                                        }
+                                                    }
+                                                },
+                                                "Create_file_2":  {
+                                                    "runAfter":  {
+                                                        "Compose":  [
+                                                            "Succeeded"
+                                                        ]
+                                                    },
+                                                    "type":  "ApiConnection",
+                                                    "inputs":  {
+                                                        "body":  "@outputs('Compose')",
+                                                        "host":  {
+                                                            "connection":  {
+                                                                "name":  "@parameters('$connections')['sharepointonline']['connectionId']"
+                                                            }
+                                                        },
+                                                        "method":  "post",
+                                                        "path":  "/datasets/@{encodeURIComponent(encodeURIComponent('https://[YOUR_DOMAIN].sharepoint.com/sites/ChatTI'))}/files",
+                                                        "queries":  {
+                                                            "folderPath":  "/Shared Documents/TI_Articles",
+                                                            "name":  "@body('Parse_JSON_-_New_Articles')?['id']",
+                                                            "queryParametersSingleEncoded":  true
+                                                        }
+                                                    },
+                                                    "runtimeConfiguration":  {
+                                                        "contentTransfer":  {
+                                                            "transferMode":  "Chunked"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "runAfter":  {
+                                                "Parse_JSON_indicators":  [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type":  "Foreach"
+                                        },
+                                        "HTTP_Get_New_Articles":  {
+                                            "runAfter":  {
+                                            },
+                                            "type":  "Http",
+                                            "inputs":  {
+                                                "authentication":  {
+                                                    "audience":  "https://graph.microsoft.com",
+                                                    "clientId":  "@variables('application')",
+                                                    "secret":  "@variables('secret')",
+                                                    "tenant":  "@variables('Tenant')",
+                                                    "type":  "ActiveDirectoryOAuth"
+                                                },
+                                                "method":  "GET",
+                                                "uri":  "https://graph.microsoft.com/beta/security/threatIntelligence/articles/@{items('For_each')?['id']}"
+                                            }
+                                        },
+                                        "HTTP_Get_article's_indicators":  {
+                                            "runAfter":  {
+                                                "Parse_JSON_-_New_Articles":  [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type":  "Http",
+                                            "inputs":  {
+                                                "authentication":  {
+                                                    "audience":  "https://graph.microsoft.com",
+                                                    "clientId":  "@variables('application')",
+                                                    "secret":  "@variables('secret')",
+                                                    "tenant":  "@variables('Tenant')",
+                                                    "type":  "ActiveDirectoryOAuth"
+                                                },
+                                                "method":  "GET",
+                                                "uri":  "https://graph.microsoft.com/beta/security/threatIntelligence/articles/@{items('For_each')?['id']}/indicators"
+                                            }
+                                        },
+                                        "Parse_JSON_-_New_Articles":  {
+                                            "runAfter":  {
+                                                "HTTP_Get_New_Articles":  [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type":  "ParseJson",
+                                            "inputs":  {
+                                                "content":  "@body('HTTP_Get_New_Articles')",
+                                                "schema":  {
+                                                    "properties":  {
+                                                        "@@odata.context":  {
+                                                            "type":  "string"
+                                                        },
+                                                        "body":  {
+                                                            "properties":  {
+                                                                "content":  {
+                                                                    "type":  "string"
+                                                                },
+                                                                "format":  {
+                                                                    "type":  "string"
+                                                                }
+                                                            },
+                                                            "type":  "object"
+                                                        },
+                                                        "createdDateTime":  {
+                                                            "type":  "string"
+                                                        },
+                                                        "id":  {
+                                                            "type":  "string"
+                                                        },
+                                                        "imageUrl":  {
+                                                        },
+                                                        "isFeatured":  {
+                                                            "type":  "boolean"
+                                                        },
+                                                        "lastUpdatedDateTime":  {
+                                                            "type":  "string"
+                                                        },
+                                                        "summary":  {
+                                                            "properties":  {
+                                                                "content":  {
+                                                                    "type":  "string"
+                                                                },
+                                                                "format":  {
+                                                                    "type":  "string"
+                                                                }
+                                                            },
+                                                            "type":  "object"
+                                                        },
+                                                        "tags":  {
+                                                            "items":  {
+                                                                "type":  "string"
+                                                            },
+                                                            "type":  "array"
+                                                        },
+                                                        "title":  {
+                                                            "type":  "string"
+                                                        }
+                                                    },
+                                                    "type":  "object"
+                                                }
+                                            }
+                                        },
+                                        "Parse_JSON_indicators":  {
+                                            "runAfter":  {
+                                                "HTTP_Get_article's_indicators":  [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type":  "ParseJson",
+                                            "inputs":  {
+                                                "content":  "@body('HTTP_Get_article''s_indicators')",
+                                                "schema":  {
+                                                    "properties":  {
+                                                        "@@odata.context":  {
+                                                            "type":  "string"
+                                                        },
+                                                        "value":  {
+                                                            "items":  {
+                                                                "properties":  {
+                                                                    "artifact":  {
+                                                                        "properties":  {
+                                                                            "@@odata.type":  {
+                                                                                "type":  "string"
+                                                                            },
+                                                                            "id":  {
+                                                                                "type":  "string"
+                                                                            },
+                                                                            "kind":  {
+                                                                                "type":  "string"
+                                                                            },
+                                                                            "value":  {
+                                                                                "type":  "string"
+                                                                            }
+                                                                        },
+                                                                        "type":  "object"
+                                                                    },
+                                                                    "id":  {
+                                                                        "type":  "string"
+                                                                    },
+                                                                    "source":  {
+                                                                        "type":  "string"
+                                                                    }
+                                                                },
+                                                                "required":  [
+                                                                    "id",
+                                                                    "source",
+                                                                    "artifact"
+                                                                ],
+                                                                "type":  "object"
+                                                            },
+                                                            "type":  "array"
+                                                        }
+                                                    },
+                                                    "type":  "object"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "runAfter":  {
+                                    },
+                                    "expression":  {
+                                        "and":  [
+                                            {
+                                                "greater":  [
+                                                    "@items('For_each')?['createdDateTime']",
+                                                    "@variables('lookbacktime')"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "type":  "If"
+                                }
+                            },
+                            "runAfter":  {
+                                "Parse_JSON_-_Article_IDs":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "Foreach"
+                        },
+                        "Get_New_Articles_IDs":  {
+                            "runAfter":  {
+                                "LookBack_Time":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "Http",
+                            "inputs":  {
+                                "authentication":  {
+                                    "audience":  "https://graph.microsoft.com",
+                                    "clientId":  "@variables('application')",
+                                    "secret":  "@variables('secret')",
+                                    "tenant":  "@variables('Tenant')",
+                                    "type":  "ActiveDirectoryOAuth"
+                                },
+                                "method":  "GET",
+                                "uri":  "https://graph.microsoft.com/beta/security/threatIntelligence/articles?$sort=createdDateTime\u0026$top=50\u0026$select=title,tags,createdDateTime"
+                            }
+                        },
+                        "LookBack_Time":  {
+                            "runAfter":  {
+                                "application":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "InitializeVariable",
+                            "inputs":  {
+                                "variables":  [
+                                    {
+                                        "name":  "lookbacktime",
+                                        "type":  "string",
+                                        "value":  "@{addDays(utcNow(),-7)}"
+                                    }
+                                ]
+                            }
+                        },
+                        "Parse_JSON_-_Article_IDs":  {
+                            "runAfter":  {
+                                "Get_New_Articles_IDs":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "ParseJson",
+                            "inputs":  {
+                                "content":  "@body('Get_New_Articles_IDs')",
+                                "schema":  {
+                                    "properties":  {
+                                        "@@odata.context":  {
+                                            "type":  "string"
+                                        },
+                                        "@@odata.nextLink":  {
+                                            "type":  "string"
+                                        },
+                                        "value":  {
+                                            "items":  {
+                                                "properties":  {
+                                                    "createdDateTime":  {
+                                                        "type":  "string"
+                                                    },
+                                                    "id":  {
+                                                        "type":  "string"
+                                                    },
+                                                    "title":  {
+                                                        "type":  "string"
+                                                    }
+                                                },
+                                                "required":  [
+                                                    "id",
+                                                    "createdDateTime",
+                                                    "title"
+                                                ],
+                                                "type":  "object"
+                                            },
+                                            "type":  "array"
+                                        }
+                                    },
+                                    "type":  "object"
+                                }
+                            }
+                        },
+                        "Secret":  {
+                            "runAfter":  {
+                                "Tenant":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "InitializeVariable",
+                            "inputs":  {
+                                "variables":  [
+                                    {
+                                        "name":  "secret",
+                                        "type":  "string",
+                                        "value":  "[parameters('Secret')]"
+                                    }
+                                ]
+                            }
+                        },
+                        "Tenant":  {
+                            "runAfter":  {
+                            },
+                            "type":  "InitializeVariable",
+                            "inputs":  {
+                                "variables":  [
+                                    {
+                                        "name":  "Tenant",
+                                        "type":  "string",
+                                        "value":  "[parameters('Tenant')]"
+                                    }
+                                ]
+                            }
+                        },
+                        "application":  {
+                            "runAfter":  {
+                                "Secret":  [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type":  "InitializeVariable",
+                            "inputs":  {
+                                "variables":  [
+                                    {
+                                        "name":  "application",
+                                        "type":  "string",
+                                        "value":  "[parameters('ClientID')]"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "parameters":  {
+                    "$connections":  {
+                        "value":  {
+                            "sharepointonline":  {
+                                "connectionId":  "[resourceId('Microsoft.Web/connections', variables('SharepointonlineConnectionName'))]",
+                                "connectionName":  "[variables('SharepointonlineConnectionName')]",
+                                "id":  "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Sharepointonline')]"
+                            }
+                        }
+                    }
+                }
+            },
+            "name":  "[parameters('PlaybookName')]",
+            "type":  "Microsoft.Logic/workflows",
+            "location":  "[resourceGroup().location]",
+            "tags":  {
+                "LogicAppsCategory":  "security",
+                "Source":  "MDTI",
+                "createddate":  "04/19/2023",
+                "owner":  "ajaykallur",
+                "hidden-SentinelTemplateName":  "MDTI_Get_Articles_IOCs_to_SPO",
+                "hidden-SentinelTemplateVersion":  "1.0"
+            },
+            "identity":  {
+                "type":  "SystemAssigned"
+            },
+            "apiVersion":  "2017-07-01",
+            "dependsOn":  [
+                "[resourceId('Microsoft.Web/connections', variables('SharepointonlineConnectionName'))]"
+            ]
+        },
+        {
+            "type":  "Microsoft.Web/connections",
+            "apiVersion":  "2016-06-01",
+            "name":  "[variables('SharepointonlineConnectionName')]",
+            "location":  "[resourceGroup().location]",
+            "kind":  "V1",
+            "properties":  {
+                "displayName":  "[variables('SharepointonlineConnectionName')]",
+                "customParameterValues":  {
+                },
+                "api":  {
+                    "id":  "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/Sharepointonline')]"
+                }
+            }
+        }
+    ]
+}

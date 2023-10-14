@@ -1,4 +1,4 @@
-# Chat-with-your-Cyber-Threat-Intelligence-data-with-Azure-OpenAI
+# Chat with your Cyber Threat Intelligence data with Azure-OpenAI
 Chat with your Cyber Threat Intelligence data with Azure OpenAI
 
 Use case description.
@@ -12,6 +12,12 @@ To upload this playbook in Azure please follow the below instructions:
 - copy and paste the json file in the previous folder in the ARM template layout.
 - click add
 - your logic app is created and ready to be deployed
+
+# Chatbot:
+![Example application](images/chatTI.png)
+
+# Demo:
+![Demo](images/demo.gif)
 
 
 Thank you!

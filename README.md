@@ -22,14 +22,23 @@ To upload this playbook in Azure please follow the below instructions:
 ![Demo](images/demo.gif)
 
 
-Thank you!
+## Microsoft Defender Threat Intelligence articles and IOCs retrieval
+It has a 'Recurrence' type time trigger set up daily. The parameters for the App Registration are defined: Tenant ID, Client ID, and Secret (I recommend not storing this information within the playbook for scenarios beyond testing but using Azure Key Vault).
+The playbook initiates a GET request to obtain the list of articles within the specified time range. Subsequently, within a 'For Each' loop, for each article's ID, a GET request is made to retrieve all information about the article itself. A similar call is made to obtain the list of IOCs (Indicators of Compromise).
+The penultimate step involves constructing a single JSON file containing the article's content and the list of indicators (I implemented this step for user convenience to have the information in a single file). Finally, the last step includes creating a JSON file with the output information, which is then written to the document library of the previously defined SharePoint Online site.
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fformat81%2FChat-with-your-Cyber-Threat-Intelligence-data-with-Azure-OpenAI%2Fmain%2FMDTI_Get_Articles_IOCs_to_SPO%2Fazuredeploy.json" target="_blank">
     <img src="https://aka.ms/deploytoazurebutton"/>
 </a>
+
+## Microsoft Defender Threat Intelligence Intel Profiles retrieval
+The second playbook - MDTI_Get_Intel_Profile_to_SPO - is responsible for retrieving information about Threat Profiles and writing them to a JSON file within the same document library used previously. The trigger is still time-based, set to run daily. App Registration parameters are defined: Tenant ID, Client ID, and Secret (I recommend not storing this information within the playbook for scenarios beyond testing but using Azure Key Vault).
+The playbook initiates a GET request to obtain the list of Intel Profile IDs, which are subsequently used in a 'For Each' loop to make another GET request to retrieve all the Intel Profiles. This information is then written to a JSON file in SharePoint Online.
+
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fformat81%2FChat-with-your-Cyber-Threat-Intelligence-data-with-Azure-OpenAI%2Fmain%2FMDTI_Get_Intel_Profile_to_SPO%2Fazuredeploy.json" target="_blank">
-<img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazuregov.png"/>
+    <img src="https://aka.ms/deploytoazurebutton"/>
 </a>
+
 
 ## Contributing
 

@@ -21,6 +21,10 @@ To upload this playbook in Azure please follow the below instructions:
 # Demo:
 ![Demo](images/demo.gif)
 
+Note: Please remember that to consume the MDTI APIs, it is necessary to define an App Registration in Entra ID with a secret and permissions as described in the following article: https://techcommunity.microsoft.com/t5/microsoft-defender-threat/what-s-new-apis-in-microsoft-graph/ba-p/3780350
+You can sign up for an MDTI Premium license trial https://signup.microsoft.com/signup/?OfferId=8851ff02-fd34-4302-aa87-01247004749d
+You can sign up for an MDTI API License trial https://signup.microsoft.com/get-started/signup?products=23a71c2d-4582-4c46-866d-4d5e2d003dc6.
+
 
 ## Microsoft Defender Threat Intelligence articles and IOCs retrieval
 It has a 'Recurrence' type time trigger set up daily. The parameters for the App Registration are defined: Tenant ID, Client ID, and Secret (I recommend not storing this information within the playbook for scenarios beyond testing but using Azure Key Vault).
